@@ -1,0 +1,4 @@
+<Solution>
+<Project Path="TelerikDemo2.Tests/TelerikDemo2.Tests.csproj" />
+<Project Path="TelerikDemo2/TelerikDemo2.csproj" />
+</Solution>
