@@ -25,6 +25,7 @@ public class AppDbContext : DbContext
             e.Property(o => o.Total).HasPrecision(18, 2);
             e.Property(o => o.Notes).HasMaxLength(OrderRules.NotesMaxLength);
             e.HasOne(o => o.Customer).WithMany(c => c.Orders).HasForeignKey(o => o.CustomerId);
+            e.Property(o => o.RowVersion).IsRowVersion();
             e.HasIndex(o => o.OrderDate);
             e.HasIndex(o => o.Status);
             e.HasIndex(o => o.Total);

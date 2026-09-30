@@ -38,6 +38,7 @@ services:
     volumes:
       - uploads:/app/App_Data
       - keys:/keys
+      - logs:/app/logs
     restart: unless-stopped
 
 secrets:
@@ -51,3 +52,4 @@ volumes:
   sqldata:
   uploads:
   keys:
+  logs:

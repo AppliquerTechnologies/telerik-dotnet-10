@@ -490,3 +490,6 @@ App_Data/
 tools/
 
 .claude/
+
+# Log files
+logs/

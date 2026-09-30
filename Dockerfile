@@ -35,8 +35,8 @@ RUN --mount=type=secret,id=telerik_license \
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
-# Uploads and data-protection keys; mount volumes here to keep them.
-RUN mkdir -p /app/App_Data/uploads /keys && chown -R $APP_UID:$APP_UID /app/App_Data /keys
+# Uploads, log files and data-protection keys; mount volumes here to keep them.
+RUN mkdir -p /app/App_Data/uploads /app/logs /keys && chown -R $APP_UID:$APP_UID /app/App_Data /app/logs /keys
 
 COPY --from=build /app/publish .
 

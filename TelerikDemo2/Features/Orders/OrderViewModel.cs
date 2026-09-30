@@ -30,6 +30,9 @@ public class OrderViewModel
 
     [StringLength(OrderRules.NotesMaxLength, ErrorMessage = "Notes cannot exceed {1} characters.")]
     public string Notes { get; set; }
+
+    // Concurrency token: sent back on update and delete so a stale edit is detected.
+    public byte[] RowVersion { get; set; }
 }
 
 // Applies OrderRules.CheckTotal as a DataAnnotation.

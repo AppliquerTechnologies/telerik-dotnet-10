@@ -13,6 +13,7 @@ public static class OrderProjection
             OrderDate = o.OrderDate,
             Total = o.Total,
             Status = o.Status,
-            Notes = o.Notes
+            Notes = o.Notes,
+            RowVersion = o.RowVersion
         });
 }

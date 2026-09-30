@@ -97,7 +97,13 @@ function showFieldErrors(container, errors) {
 function onGridError(e) {
     var grid = getGrid();
     if (e.errors) {
-        if (grid.editable) {
+        var conflict = Object.keys(e.errors).filter(function (k) { return k.toLowerCase() === "rowversion"; })[0];
+        if (conflict) {
+            // Someone else changed the order: discard the stale edit and reload.
+            if (grid.editable) grid.cancelRow();
+            showMessage("Order changed", e.errors[conflict].errors.join("<br/>"));
+            grid.dataSource.read();
+        } else if (grid.editable) {
             grid.one("dataBinding", function (ev) { ev.preventDefault(); });
             var popup = grid.editable.element;
             // Save stays disabled after the cancelled rebind, so re-enable it.

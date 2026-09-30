@@ -100,11 +100,11 @@ public abstract class OrdersPageModelBase : PageModel
         return new JsonResult(new[] { order }.ToDataSourceResult(request, ModelState));
     }
 
-    public async Task<IActionResult> OnPostDestroyAsync([DataSourceRequest] DataSourceRequest request, int orderId)
+    public async Task<IActionResult> OnPostDestroyAsync([DataSourceRequest] DataSourceRequest request, int orderId, byte[] rowVersion)
     {
         if (!CanManage) return Forbid();
 
-        var result = await Dispatcher.SendAsync(new DeleteOrder(orderId), Ct);
+        var result = await Dispatcher.SendAsync(new DeleteOrder(orderId, rowVersion), Ct);
         if (!result.Succeeded) AddErrors(result);
 
         return new JsonResult(new[] { new OrderViewModel { OrderId = orderId } }.ToDataSourceResult(request, ModelState));

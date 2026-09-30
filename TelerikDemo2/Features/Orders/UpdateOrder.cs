@@ -30,12 +30,26 @@ public sealed class UpdateOrderHandler(AppDbContext db, OrderInputValidator vali
             return result;
         }
 
+        if (model.RowVersion is null)
+        {
+            return Result<OrderViewModel>.Fail(nameof(OrderViewModel.RowVersion), OrderRules.ConflictMessage);
+        }
+        // The UPDATE only matches if the row still has the version the user started from.
+        db.Entry(entity).Property(o => o.RowVersion).OriginalValue = model.RowVersion;
+
         entity.CustomerId = model.CustomerId.Value;
         entity.OrderDate = model.OrderDate.Value.Date;
         entity.Total = model.Total.Value;
         entity.Status = model.Status;
         entity.Notes = string.IsNullOrWhiteSpace(model.Notes) ? null : model.Notes.Trim();
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Result<OrderViewModel>.Fail(nameof(OrderViewModel.RowVersion), OrderRules.ConflictMessage);
+        }
 
         var updated = await db.Orders.AsNoTracking().Where(o => o.Id == entity.Id).ToViewModel().SingleAsync(ct);
         return Result<OrderViewModel>.Ok(updated);

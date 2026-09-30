@@ -8,7 +8,6 @@ public static class DbSeeder
     private const int CustomerCount = 200;
     private const int OrderCount = 150_000;
     private const int BatchSize = 5_000;
-    private const int ConnectAttempts = 12;
 
     // Fixed end date so the data is the same on every run.
     private static readonly DateTime EndDate = new(2026, 9, 30);
@@ -31,22 +30,6 @@ public static class DbSeeder
         using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DbSeeder");
-
-        // EnsureCreated instead of migrations (see README). Retried because in Docker the app
-        // can start before SQL Server accepts connections.
-        for (var attempt = 1; ; attempt++)
-        {
-            try
-            {
-                await db.Database.EnsureCreatedAsync(ct);
-                break;
-            }
-            catch (Exception ex) when (attempt < ConnectAttempts && ex is not OperationCanceledException)
-            {
-                logger.LogWarning("Database not ready (attempt {Attempt}/{Max}): {Message}", attempt, ConnectAttempts, ex.Message);
-                await Task.Delay(TimeSpan.FromSeconds(5), ct);
-            }
-        }
 
         // Seed on first startup only.
         if (await db.Customers.AnyAsync(ct))

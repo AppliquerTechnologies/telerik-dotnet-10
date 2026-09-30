@@ -12,6 +12,7 @@ public static class OrderRules
     public const OrderStatus InitialStatus = OrderStatus.New;
 
     public const string NotFoundMessage = "The order no longer exists.";
+    public const string ConflictMessage = "Someone else changed this order. The list has been refreshed; please check it and try again.";
 
 
     public static bool IsLocked(OrderStatus status) => status == OrderStatus.Shipped;

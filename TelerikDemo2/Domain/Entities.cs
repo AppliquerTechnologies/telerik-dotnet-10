@@ -26,4 +26,5 @@ public class Order
     public decimal Total { get; set; }
     public OrderStatus Status { get; set; }
     public string Notes { get; set; }
+    public byte[] RowVersion { get; set; }
 }
