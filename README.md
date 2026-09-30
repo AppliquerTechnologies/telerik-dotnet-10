@@ -65,7 +65,7 @@ Razor Pages are served from `Features/` instead of `Pages/`. PageModels stay thi
 
 Business rules (no Shipped order on create, Shipped orders can't be changed or deleted, total between 10 and 5,000, no future dates, the customer must exist) are in `Domain/OrderRules.cs` and nowhere else. The same class holds the limits that the view model attribute, the editor templates, the EF mapping and the seeder use. Who can edit is defined once in `Features/Auth/Permissions.cs`; the write handlers enforce it and the views use it to hide buttons. Upload limits come from `Attachments` in `appsettings.json` and are also passed to the Upload widget.
 
-Grid reads use `AsNoTracking`, project to a view model in the query and go through `ToDataSourceResultAsync`, so paging, sorting and filtering run in SQL. There are indexes on `OrderDate` and `Status`. Anti-forgery tokens travel with every Telerik call through `.Data("forgeryToken")`.
+Grid reads use `AsNoTracking`, project to a view model in the query and go through `ToDataSourceResultAsync`, so paging, sorting and filtering run in SQL. There are indexes on `OrderDate`, `Status` and `Total`, and on `Customers.Name`. Anti-forgery tokens travel with every Telerik call through `.Data("forgeryToken")`.
 
 ## Offset and cursor paging
 
@@ -78,7 +78,7 @@ Grid reads use `AsNoTracking`, project to a view model in the query and go throu
 
 Both pages share a base PageModel, the grid definition, the filter bar and `wwwroot/js/orders.js`. They only differ in the read handler and the paging bar. The cursor logic is in `Common/KeysetPager.cs`: one sort column plus the id as tie-break, an opaque cursor, and the browser keeps a stack of cursors so Previous works. Changing the sort or filter goes back to page 1.
 
-Timing when paging through all 150,000 rows in pages of 100: 5 to 14 seconds (7 to 10 ms a page) for the indexed columns (`OrderId`, `OrderDate`, `Status`), and roughly 140 seconds (95 ms a page) for `Total` and `CustomerName`, which have no index. Add indexes if those sorts matter.
+Timing when paging through all 150,000 rows in pages of 100 (LocalDB): 4 to 12 ms a page when sorting by `OrderId`, `OrderDate`, `Status` or `Total` (the last one measured across the full walk), which all have indexes. Sorting by customer name takes roughly 175 ms a page. There is an index on `Customers.Name`, but the list sorts orders by the joined customer name, so SQL still has to join and sort all orders for each page. Making that sort cheap would need the name stored on the order (or an indexed view).
 
 ## Tests
 

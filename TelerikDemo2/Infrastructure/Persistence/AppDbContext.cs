@@ -17,6 +17,7 @@ public class AppDbContext : DbContext
             e.Property(c => c.Name).IsRequired().HasMaxLength(100);
             e.Property(c => c.Email).HasMaxLength(150);
             e.Property(c => c.City).HasMaxLength(80);
+            e.HasIndex(c => c.Name);
         });
 
         modelBuilder.Entity<Order>(e =>
@@ -26,6 +27,7 @@ public class AppDbContext : DbContext
             e.HasOne(o => o.Customer).WithMany(c => c.Orders).HasForeignKey(o => o.CustomerId);
             e.HasIndex(o => o.OrderDate);
             e.HasIndex(o => o.Status);
+            e.HasIndex(o => o.Total);
         });
     }
 }
