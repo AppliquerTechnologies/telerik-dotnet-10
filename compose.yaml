@@ -1,0 +1,53 @@
+# Copy .env.example to .env first, then: docker compose up --build
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    # Apple Silicon: uncomment to run under emulation.
+    # platform: linux/amd64
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in .env}
+      MSSQL_PID: Developer
+    volumes:
+      - sqldata:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q \"SELECT 1\" -b -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    # Published so SSMS / Azure Data Studio can connect.
+    ports:
+      - "1433:1433"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      secrets:
+        - telerik_key
+        - telerik_license
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=TelerikDemoOrders;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True"
+    ports:
+      - "${WEB_PORT:-8080}:8080"
+    volumes:
+      - uploads:/app/App_Data
+      - keys:/keys
+    restart: unless-stopped
+
+secrets:
+  # Build time only; the values come from .env or your shell.
+  telerik_key:
+    environment: TELERIK_NUGET_KEY
+  telerik_license:
+    environment: TELERIK_LICENSE
+
+volumes:
+  sqldata:
+  uploads:
+  keys:
