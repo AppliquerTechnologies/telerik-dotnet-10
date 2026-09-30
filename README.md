@@ -8,6 +8,7 @@ A small orders and customers app built with ASP.NET Core 10 Razor Pages, Telerik
 - Details window (Summary / Notes / Attachments tabs), file upload, a small REST API, a status summary, session state
 - Cookie login with two roles: Admin can add, edit and delete; User is read-only
 - Optimistic concurrency with a SQL Server `rowversion`, EF Core migrations applied on startup, structured JSON logging with Serilog
+- A loader covers every server call (grid reads, saves, deletes, uploads, sign in and out); it only appears if a call takes longer than 150 ms and blocks clicks meanwhile, so nothing is submitted twice
 
 ## Setup
 
@@ -121,7 +122,6 @@ Timing when paging through all 150,000 rows in pages of 100 (LocalDB): 4 to 12 m
 ## What has not been verified
 
 - Only Chrome was tested (1440 px and 390 px wide). Firefox, Safari, Edge and real touch devices were not.
-- The Upload widget renders and the upload/download handlers work when called directly, but I never selected a file through the browser.
 - The grid header filter menus render, but I didn't click through them. The server side of filtering was tested with direct requests.
 - No accessibility review (keyboard use, screen readers, contrast).
 - The pages need the CDNs; not tested offline.

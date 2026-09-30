@@ -67,14 +67,15 @@
                     <script>
                         $("#upload@(d.OrderId)").kendoUpload({
                             async: {
-                                saveUrl: '@Url.Page(null, "Upload", new { id = d.OrderId })',
-                                removeUrl: '@Url.Page(null, "RemoveFile", new { id = d.OrderId })',
+                                saveUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Url.Page(null, "Upload", new { id = d.OrderId }))),
+                                removeUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Url.Page(null, "RemoveFile", new { id = d.OrderId }))),
                                 autoUpload: true
                             },
-                            upload: function (e) { e.data = forgeryToken(); },   // anti-forgery for the upload POST
+                            upload: function (e) { e.data = forgeryToken(); this.done = loader.start(); },   // anti-forgery for the upload POST
+                            complete: function () { if (this.done) this.done(); },
                             remove: function (e) { e.data = forgeryToken(); },
                             success: function () { toast("File uploaded"); refreshDetails(@d.OrderId); },
-                            error: function (e) { showMessage("Upload failed", e.XMLHttpRequest.responseText || "Upload failed."); },
+                            error: function (e) { if (this.done) this.done(); showMessage("Upload failed", e.XMLHttpRequest.responseText || "Upload failed."); },
                             validation: { maxFileSize: @Model.MaxUploadBytes, allowedExtensions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AllowedExtensions)) }
                         });
                     </script>

@@ -9,7 +9,7 @@
 
 <script src="~/js/orders.js" asp-append-version="true"></script>
 <script>
-    window.ordersConfig = { detailsUrl: '@Url.Page(null, "Details")' };
+    window.ordersConfig = { detailsUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Url.Page(null, "Details"))) };
 </script>
 
 <div class="page-head">

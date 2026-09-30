@@ -1,6 +1,9 @@
 // Shared by the offset and cursor Orders pages. Expects window.ordersConfig.detailsUrl (set in
 // _OrdersChrome) and a Telerik Grid named "grid".
 
+// Every jQuery / Kendo AJAX call (grid reads and saves, details window, dropdown lists). loader.js is loaded by the layout.
+$(document).ajaxSend(function (event, xhr) { xhr.always(loader.start()); });
+
 function forgeryToken() {
     return kendo.antiForgeryTokens();
 }
@@ -45,6 +48,7 @@ function statusName(status) {
 }
 
 function loadSummary() {
+    var done = loader.start();
     fetch('/api/orders/summary', { credentials: 'same-origin' })
         .then(function (r) { return r.json(); })
         .then(function (rows) {
@@ -57,7 +61,8 @@ function loadSummary() {
                        '<div class="stat__sub">' + kendo.toString(x.totalValue, "c0") + ' &middot; ' + pct + '% of orders</div>' +
                        '<div class="stat__bar"><span style="width:' + pct + '%"></span></div></div>';
             }).join(""));
-        });
+        })
+        .finally(done);
 }
 
 function toast(message, type) {
