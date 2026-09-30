@@ -1,0 +1,41 @@
+@page
+@model TelerikDemo2.Features.Orders.IndexModel
+@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Orders";
+    ViewData["Mode"] = "offset";
+}
+
+<partial name="_OrdersChrome" model="Model" />
+
+<div class="card grid-card">
+    @(Html.Kendo().Grid<OrderViewModel>()
+        .Name("grid")
+        .ConfigureOrders(Model.CanManage)
+        .Pageable(pager => pager.PageSizes(new[] { 10, 20, 50, 100 }).Refresh(true))
+        .Events(e => e.Sort("onSort").Filter("onFilter"))
+        .DataSource(ds =>
+        {
+            var source = ds.Ajax();
+            source.PageSize(20)
+                  .Events(e => e.Error("onGridError").RequestEnd("onRequestEnd"))
+                  .Read(r => r.Url(Url.Page(null, "Read")).Data("readData"));
+            source.ConfigureOrdersDataSource(Url);
+        })
+    )
+</div>
+
+@section Scripts {
+    <script>
+        function readData() {
+            return $.extend(forgeryToken(), filterValues());
+        }
+        function firstPage() { getGrid().dataSource.page(1); }
+
+        function onSort() { }
+        function onFilter() { }
+        function onRequestEnd(e) { notifyResult(e); }
+
+        $(function () { initOrdersFilterBar(firstPage); });
+    </script>
+}

@@ -1,0 +1,90 @@
+@model TelerikDemo2.Features.Orders.OrderDetailsPageViewModel
+@using Kendo.Mvc.UI
+@{
+    var d = Model.Details;
+    var initial = string.IsNullOrEmpty(d.CustomerName) ? "?" : d.CustomerName[..1];
+}
+
+<div class="detail">
+    <div class="detail__hero">
+        <div class="detail__avatar">@initial</div>
+        <div>
+            <div class="detail__name">@d.CustomerName</div>
+            <div class="detail__email">@d.CustomerEmail</div>
+        </div>
+        <div class="detail__total">
+            <strong>@TelerikDemo2.Common.Format.Money(d.Total)</strong>
+            <span class="status-badge status-@((int)d.Status)">@d.Status</span>
+        </div>
+    </div>
+
+    @(Html.Kendo().TabStrip()
+        .Name("detailsTabs" + d.OrderId)
+        .Items(items =>
+        {
+            items.Add().Text("Summary").Selected(true).Content(@<text>
+                <dl class="kv">
+                    <dt>Order #</dt><dd class="tabular">@d.OrderId</dd>
+                    <dt>Customer</dt><dd>@d.CustomerName</dd>
+                    <dt>City</dt><dd>@d.CustomerCity</dd>
+                    <dt>Order date</dt><dd>@d.OrderDate.ToString("dd MMM yyyy")</dd>
+                    <dt>Total</dt><dd class="tabular">@TelerikDemo2.Common.Format.Money(d.Total)</dd>
+                    <dt>Status</dt><dd><span class="status-badge status-@((int)d.Status)">@d.Status</span></dd>
+                </dl>
+            </text>);
+            items.Add().Text("Notes").Content(@<text>
+                @if (string.IsNullOrWhiteSpace(d.Notes))
+                {
+                    <div class="notes-empty">No notes for this order.</div>
+                }
+                else
+                {
+                    <div class="notes-box">@d.Notes</div>
+                }
+            </text>);
+            items.Add().Text("Attachments (" + Model.Attachments.Count + ")").Content(@<text>
+                @if (Model.Attachments.Count == 0)
+                {
+                    <div class="notes-empty">No attachments yet.</div>
+                }
+                else
+                {
+                    <ul class="file-list">
+                        @foreach (var a in Model.Attachments)
+                        {
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.4 11-9.2 9.2a5.5 5.5 0 0 1-7.8-7.8l9.2-9.2a3.7 3.7 0 0 1 5.2 5.2l-9.2 9.2a1.8 1.8 0 0 1-2.6-2.6l8.5-8.5"/></svg>
+                                <a href="@Url.Page(null, "Download", new { id = d.OrderId, name = a.FileName })">@a.FileName</a>
+                                <span class="size">@(a.SizeBytes / 1024 + 1) KB</span>
+                            </li>
+                        }
+                    </ul>
+                }
+
+                @if (Model.CanUpload)
+                {
+                    <input type="file" name="files" id="@("upload" + d.OrderId)" />
+                    <script>
+                        $("#upload@(d.OrderId)").kendoUpload({
+                            async: {
+                                saveUrl: '@Url.Page(null, "Upload", new { id = d.OrderId })',
+                                removeUrl: '@Url.Page(null, "RemoveFile", new { id = d.OrderId })',
+                                autoUpload: true
+                            },
+                            upload: function (e) { e.data = forgeryToken(); },   // anti-forgery for the upload POST
+                            remove: function (e) { e.data = forgeryToken(); },
+                            success: function () { toast("File uploaded"); refreshDetails(@d.OrderId); },
+                            error: function (e) { showMessage("Upload failed", e.XMLHttpRequest.responseText || "Upload failed."); },
+                            validation: { maxFileSize: @Model.MaxUploadBytes, allowedExtensions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AllowedExtensions)) }
+                        });
+                    </script>
+                    <p class="upload-hint">Up to @(Model.MaxUploadBytes / 1024 / 1024) MB &middot; @string.Join(", ", Model.AllowedExtensions)</p>
+                }
+                else
+                {
+                    <p class="upload-hint">Only admins can upload files.</p>
+                }
+            </text>);
+        })
+    )
+</div>

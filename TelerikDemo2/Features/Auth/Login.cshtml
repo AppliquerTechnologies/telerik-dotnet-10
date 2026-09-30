@@ -1,0 +1,67 @@
+@page "/Login"
+@model TelerikDemo2.Features.Auth.LoginModel
+@{
+    ViewData["Title"] = "Sign in";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth">
+    <section class="auth__brand">
+        <div class="brand">
+            <span class="brand__mark">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg>
+            </span>
+            <span>Orders</span>
+        </div>
+
+        <div class="auth__pitch">
+            <h2>Customer orders</h2>
+            <p>Browse, search and edit orders. Admins can change data; other users are read-only.</p>
+        </div>
+
+        <div class="auth__foot">Sample data only</div>
+    </section>
+
+    <section class="auth__panel">
+        <div class="auth__card">
+            <h1>Sign in</h1>
+            <p class="lead">Use one of the sample accounts below.</p>
+
+            <form method="post" id="loginForm">
+                <input type="hidden" asp-for="ReturnUrl" />
+                <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+                <div class="field">
+                    <label asp-for="Input.UserName">User name</label>
+                    <input asp-for="Input.UserName" autocomplete="username" autofocus />
+                    <span asp-validation-for="Input.UserName" class="text-danger"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Input.Password">Password</label>
+                    <input asp-for="Input.Password" autocomplete="current-password" />
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn--primary">Sign in</button>
+            </form>
+
+            <div class="demo-accounts">
+                <h3>Sample accounts</h3>
+                <button type="button" data-user="admin" data-pass="Admin123!"><b>admin</b> <span>full access</span> <span class="role role-badge">Admin</span></button>
+                <button type="button" data-user="user" data-pass="User123!"><b>user</b> <span>view only</span> <span class="role role-badge role-badge--readonly">Read-only</span></button>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.demo-accounts button').forEach(function (b) {
+            b.addEventListener('click', function () {
+                document.getElementById('Input_UserName').value = b.dataset.user;
+                document.getElementById('Input_Password').value = b.dataset.pass;
+                document.getElementById('Input_Password').focus();
+            });
+        });
+    </script>
+}

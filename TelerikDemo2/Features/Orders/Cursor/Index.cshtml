@@ -1,0 +1,99 @@
+@page
+@model TelerikDemo2.Features.Orders.Cursor.IndexModel
+@using Kendo.Mvc.UI
+@using TelerikDemo2.Features.Orders
+@{
+    ViewData["Title"] = "Orders (cursor paging)";
+    ViewData["Mode"] = "cursor";
+}
+
+<partial name="_OrdersChrome" model="Model" />
+
+<div class="card grid-card">
+    @* Telerik's built-in pager is offset based, so it is not used here. *@
+    @(Html.Kendo().Grid<OrderViewModel>()
+        .Name("grid")
+        .ConfigureOrders(Model.CanManage)
+        .Events(e => e.Sort("onSort").Filter("onFilter"))
+        .DataSource(ds =>
+        {
+            var source = ds.Ajax();
+            source.Events(e => e.Error("onGridError").RequestEnd("onRequestEnd"))
+                  .Read(r => r.Url(Url.Page(null, "Read")).Data("readData"));
+            source.ConfigureOrdersDataSource(Url);
+        })
+    )
+
+    <div class="cursor-bar">
+        <button type="button" id="prevPage" class="btn btn--ghost" disabled>&larr; Previous</button>
+        <button type="button" id="nextPage" class="btn btn--ghost" disabled>Next &rarr;</button>
+        <span id="pageInfo" class="cursor-bar__info"></span>
+        <span class="cursor-bar__size">
+            <label for="pageSize">Rows per page</label>
+            @(Html.Kendo().DropDownList()
+                .Name("pageSize")
+                .BindTo(new[] { 10, 20, 50, 100 })
+                .Value("20")
+                .HtmlAttributes(new { style = "width:88px" }))
+        </span>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // cursors[i] fetches page i (null = first page). The server returns NextCursor with each page;
+        // Previous just steps back in this list.
+        var pager = { cursors: [null], index: 0, next: null, size: 20 };
+
+        function resetPager() { pager.cursors = [null]; pager.index = 0; pager.next = null; }
+        function reloadFirstPage() { resetPager(); getGrid().dataSource.read(); }
+
+        function updatePager(rowCount) {
+            var from = pager.index * pager.size + 1;
+            $("#pageInfo").text(rowCount ? "Page " + (pager.index + 1) + " · rows " + from + "–" + (from + rowCount - 1) : "No rows");
+            $("#prevPage").prop("disabled", pager.index === 0);
+            $("#nextPage").prop("disabled", !pager.next);
+        }
+
+        function readData() {
+            return $.extend(forgeryToken(), filterValues(), {
+                cursor: pager.cursors[pager.index],
+                pageSize: pager.size
+            });
+        }
+
+        function onRequestEnd(e) {
+            if (e.type === "read" && e.response) {
+                pager.next = e.response.NextCursor || null;
+                updatePager(e.response.Data ? e.response.Data.length : 0);
+            } else if (e.response && !e.response.Errors && (e.type === "create" || e.type === "update" || e.type === "destroy")) {
+                notifyResult(e);
+                // Page boundaries may have moved; re-read the current page.
+                setTimeout(function () { getGrid().dataSource.read(); }, 0);
+            }
+        }
+
+        // A new sort or filter invalidates old cursors.
+        function onSort() { resetPager(); }
+        function onFilter() { resetPager(); }
+
+        $(function () {
+            initOrdersFilterBar(reloadFirstPage);
+            $("#nextPage").on("click", function () {
+                if (!pager.next) return;
+                pager.cursors[pager.index + 1] = pager.next;
+                pager.index++;
+                getGrid().dataSource.read();
+            });
+            $("#prevPage").on("click", function () {
+                if (pager.index === 0) return;
+                pager.index--;
+                getGrid().dataSource.read();
+            });
+            $("#pageSize").data("kendoDropDownList").bind("change", function () {
+                pager.size = parseInt(this.value(), 10);
+                reloadFirstPage();
+            });
+        });
+    </script>
+}

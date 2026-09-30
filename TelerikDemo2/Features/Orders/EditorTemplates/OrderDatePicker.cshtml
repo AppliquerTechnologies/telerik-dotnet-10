@@ -1,0 +1,7 @@
+@model DateTime?
+@using Kendo.Mvc.UI
+
+@(Html.Kendo().DatePickerFor(m => m)
+    .Format("yyyy-MM-dd")
+    .Max(TelerikDemo2.Domain.OrderRules.LatestOrderDate(DateTime.Today))
+    .HtmlAttributes(new { style = "width:100%", title = Html.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName("") }))

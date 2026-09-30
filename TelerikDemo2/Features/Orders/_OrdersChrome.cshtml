@@ -1,0 +1,94 @@
+@model TelerikDemo2.Features.Orders.OrdersPageModelBase
+@using Kendo.Mvc.UI
+@{
+    var cursorMode = string.Equals(ViewData["Mode"] as string, "cursor", StringComparison.OrdinalIgnoreCase);
+}
+
+@* kendo.antiForgeryTokens() reads the token from the page. *@
+@Html.AntiForgeryToken()
+
+<script src="~/js/orders.js" asp-append-version="true"></script>
+<script>
+    window.ordersConfig = { detailsUrl: '@Url.Page(null, "Details")' };
+</script>
+
+<div class="page-head">
+    <h1>Orders</h1>
+    <nav class="segmented" aria-label="Pagination mode">
+        <a asp-page="/Orders/Index" class="@(cursorMode ? "" : "is-active")">Offset paging</a>
+        <a asp-page="/Orders/Cursor/Index" class="@(cursorMode ? "is-active" : "")">Cursor paging</a>
+    </nav>
+</div>
+
+<div class="mode-note">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+    @if (cursorMode)
+    {
+        <span><strong>Cursor paging.</strong> Each page starts after the last row of the previous one (no OFFSET, no COUNT), so deep pages stay fast and rows don't shift while you browse. You can only move to the next or previous page.</span>
+    }
+    else
+    {
+        <span><strong>Offset paging.</strong> Numbered pages with a total count, so you can jump anywhere. Deeper pages cost more because SQL has to skip the earlier rows.</span>
+    }
+</div>
+
+@* Filled from GET /api/orders/summary *@
+<div id="summary" class="stats" aria-live="polite">
+    @for (var i = 0; i < 4; i++)
+    {
+        <div class="stat stat--skeleton"><div class="stat__label">&nbsp;</div><div class="stat__value">0</div><div class="stat__sub">0</div></div>
+    }
+</div>
+
+<div class="card filters">
+    <div class="grow search-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        @(Html.Kendo().TextBox().Name("searchBox").Placeholder("Search customer or notes...").HtmlAttributes(new { style = "width:100%" }))
+    </div>
+    <div class="grow">
+        @(Html.Kendo().ComboBox()
+            .Name("customerFilter")
+            .Placeholder("All customers")
+            .DataTextField("Name")
+            .DataValueField("Id")
+            .Filter(FilterType.Contains)
+            .HtmlAttributes(new { style = "width:100%" })
+            .DataSource(source => source.Custom()
+                .Transport(t => t.Read(r => r.Url(Url.Page(null, "Customers")).Type(HttpVerbs.Post).Data("forgeryToken")))))
+    </div>
+    <button type="button" id="applyFilter" class="btn btn--primary">Search</button>
+    <button type="button" id="clearFilter" class="btn btn--ghost">Clear</button>
+    @if (Model.LastViewedOrderId is int last)
+    {
+        <span class="filters__meta" title="Kept in the ASP.NET Core session">Last viewed: order #@last</span>
+    }
+</div>
+
+@(Html.Kendo().Window()
+    .Name("detailsWindow")
+    .Title("Order details")
+    .Visible(false)
+    .Modal(true)
+    .Width(560)
+    .Resizable(r => r.Enabled(false))
+    .Draggable(false)
+    .Actions(a => a.Close())
+    .Content("Loading...")
+)
+
+@(Html.Kendo().Dialog()
+    .Name("messageDialog")
+    .Title("Message")
+    .Visible(false)
+    .Modal(true)
+    .Width(420)
+    .Content("")
+    .Actions(a => a.Add().Text("OK").Primary(true))
+)
+
+@(Html.Kendo().Notification()
+    .Name("toast")
+    .Position(p => p.Pinned(true).Top(80).Right(24))
+    .AutoHideAfter(3200)
+    .Stacking(NotificationStackingSettings.Down)
+)

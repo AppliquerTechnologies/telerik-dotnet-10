@@ -9,11 +9,4 @@
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.*" />
 		<PackageReference Include="Telerik.UI.for.AspNet.Core" Version="2026.3.811" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<Compile Remove="Templates\**" />
-		<Content Remove="Templates\**" />
-		<EmbeddedResource Remove="Templates\**" />
-		<None Remove="Templates\**" />
-	</ItemGroup>
 </Project>

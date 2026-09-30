@@ -1,0 +1,13 @@
+@model int?
+@using Kendo.Mvc.UI
+
+@(Html.Kendo().DropDownListFor(m => m)
+    .DataTextField("Name")
+    .DataValueField("Id")
+    .ValuePrimitive(true)
+    .OptionLabel("Select customer...")
+    .Filter(FilterType.Contains)
+    .DataSource(source => source
+        .Custom()
+        .Transport(t => t.Read(r => r.Url(Url.Page(null, "Customers")).Type(HttpVerbs.Post).Data("forgeryToken"))))
+    .HtmlAttributes(new { style = "width:100%" }))

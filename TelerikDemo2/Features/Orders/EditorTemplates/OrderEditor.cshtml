@@ -1,0 +1,38 @@
+@model TelerikDemo2.Features.Orders.OrderViewModel
+@using Kendo.Mvc.UI
+
+@Html.HiddenFor(m => m.OrderId)
+
+<div class="k-edit-label">@Html.LabelFor(m => m.CustomerId)</div>
+<div class="k-edit-field">
+    @Html.EditorFor(m => m.CustomerId)
+    @Html.ValidationMessageFor(m => m.CustomerId)
+</div>
+
+<div class="k-edit-label">@Html.LabelFor(m => m.OrderDate)</div>
+<div class="k-edit-field">
+    @Html.EditorFor(m => m.OrderDate)
+    @Html.ValidationMessageFor(m => m.OrderDate)
+</div>
+
+<div class="k-edit-label">@Html.LabelFor(m => m.Total)</div>
+<div class="k-edit-field">
+    @(Html.Kendo().NumericTextBoxFor(m => m.Total).Min(TelerikDemo2.Domain.OrderRules.MinTotal).Max(TelerikDemo2.Domain.OrderRules.MaxTotal).Format("c").Spinners(false))
+    @Html.ValidationMessageFor(m => m.Total)
+</div>
+
+<div class="k-edit-label">@Html.LabelFor(m => m.Status)</div>
+<div class="k-edit-field">
+    @(Html.Kendo().DropDownListFor(m => m.Status)
+        .DataTextField("Text")
+        .DataValueField("Value")
+        .ValuePrimitive(true)
+        .BindTo(TelerikDemo2.Features.Orders.StatusItem.All()))
+    @Html.ValidationMessageFor(m => m.Status)
+</div>
+
+<div class="k-edit-label">@Html.LabelFor(m => m.Notes)</div>
+<div class="k-edit-field">
+    @(Html.Kendo().TextAreaFor(m => m.Notes).Rows(3).MaxLength(TelerikDemo2.Domain.OrderRules.NotesMaxLength))
+    @Html.ValidationMessageFor(m => m.Notes)
+</div>
